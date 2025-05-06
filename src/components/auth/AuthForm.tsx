@@ -12,7 +12,12 @@ import {
 } from '@mui/material';
 import { Google as GoogleIcon } from '@mui/icons-material';
 
-const AuthForm: React.FC = () => {
+interface AuthFormProps {
+  isAnonymous?: boolean;
+  setAnonymousMode?: (mode: boolean) => void;
+}
+
+const AuthForm: React.FC<AuthFormProps> = ({isAnonymous = false, setAnonymousMode = () => {}}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLogin, setIsLogin] = useState(true);
@@ -85,6 +90,18 @@ const AuthForm: React.FC = () => {
           sx={{ mb: 2 }}
         >
           Continue with Google
+        </Button>
+        <Button
+          fullWidth
+          variant="outlined"
+          startIcon={<GoogleIcon />}
+          onClick={() => {
+            setAnonymousMode(true);
+          }}
+          disabled={loading}
+          sx={{ mb: 2 }}
+        >
+          Continue as Anonymous
         </Button>
         
         <Typography variant="body2" align="center">

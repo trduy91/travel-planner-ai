@@ -1,15 +1,22 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { callAI } from '@/lib/services/aiService';
+import { rateLimiter } from '@/middleware/rateLimiter';
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
   try {
+    await new Promise<void>((resolve, reject) => {
+      rateLimiter(req, res, (err?: any) => {
+        if (err) return reject(err);
+        resolve();
+      });
+    });
+
+    if (req.method !== 'POST') {
+      return res.status(405).json({ error: 'Method not allowed' });
+    }
+
     const { messages, model = 'gemini-2.0-flash' } = req.body;
     const apiKey = process.env.NEXT_PUBLIC_AI_API_KEY;
 
@@ -42,8 +49,8 @@ export default async function handler(
     res.status(200).json(data);
   } catch (error) {
     console.error('Gemini API error:', error);
-    res.status(500).json({ 
-      error: error instanceof Error ? error.message : 'Unknown error occurred' 
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
     });
   }
 }

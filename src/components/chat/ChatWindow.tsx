@@ -40,8 +40,12 @@ const QUICK_PROMPTS = [
   { text: 'Local food recommendations in Italy', icon: <RestaurantIcon /> },
 ];
 
+interface ChatWindowProps {
+  isAnonymous?: boolean;
+  setAnonymousMode?: (mode: boolean) => void;
+}
 
-const ChatWindow: React.FC = () => {
+const ChatWindow: React.FC<ChatWindowProps> = ({isAnonymous = false, setAnonymousMode = () => {}}) => {
   const {
     messages,
     newMessage,
@@ -55,11 +59,16 @@ const ChatWindow: React.FC = () => {
   const { user, logout } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
     // Local state for the immediate input value
-    const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState('');
+  const [localMessage, setLocalMessage] = useState<Message[]>()
+
+  useEffect(() => {
+    setLocalMessage(messages)
+  }, [messages])
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [localMessage]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -85,26 +94,36 @@ const ChatWindow: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (inputValue.trim()) { // Use inputValue for the check and sending
-      sendMessage(inputValue);
+      sendMessage(inputValue, {saveDB: !isAnonymous});
       setInputValue(''); // Clear local input state
     }
   };
 
   const handleQuickPrompt = async (prompt: string) => {
     setNewMessage(prompt);
-    await sendMessage(prompt);
+    await sendMessage(prompt, {saveDB: !isAnonymous});
   };
+  const handleLogout = () => {
+    if (user) {
+      logout()
+    } else {
+      setAnonymousMode(false);
+    }
+  }
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <AppBar position="static" color="primary">
         <Toolbar>
-          <IconButton edge="start" color="inherit" onClick={logout}>
+          <IconButton edge="start" color="inherit" onClick={handleLogout}>
             <ArrowBackIcon />
           </IconButton>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Travel Planner AI
           </Typography>
+          {isAnonymous && (
+            <Typography variant="h6">You are in anonymous mode. Limited questions apply.</Typography>
+          )}
           {user && (
             <Avatar 
               alt={user.displayName || 'User'} 
@@ -142,7 +161,7 @@ const ChatWindow: React.FC = () => {
 
       <Box sx={{ flex: 1, overflow: 'auto', p: 2, bgcolor: '#f5f5f5' }}>
         <List sx={{ width: '100%' }}>
-          {messages.map((message) => (
+          {localMessage && localMessage.map((message) => (
             <motion.div
               key={message.id}
               initial={{ opacity: 0, y: 20 }}
@@ -177,6 +196,15 @@ const ChatWindow: React.FC = () => {
                     <Avatar 
                       alt={user.displayName || 'User'} 
                       src={user.photoURL || undefined} 
+                      sx={{ width: 32, height: 32 }}
+                    />
+                  </ListItemAvatar>
+                )}
+                {message.sender === 'user' && isAnonymous && (
+                  <ListItemAvatar sx={{ minWidth: 40, ml: 1 }}>
+                    <Avatar 
+                      alt='User'
+                      src={undefined} 
                       sx={{ width: 32, height: 32 }}
                     />
                   </ListItemAvatar>

@@ -1,10 +1,12 @@
 import { useAuth } from '@/hooks/useAuth';
 import AuthForm from '@/components/auth/AuthForm';
 import ChatWindow from '@/components/chat/ChatWindow';
-import { Box, CircularProgress } from '@mui/material';
+import { Box, Button, CircularProgress, Typography } from '@mui/material';
+import { useState } from 'react';
 
 export default function Home() {
   const { user, loading } = useAuth();
+  const [anonymousMode, setAnonymousMode] = useState(false);
 
   if (loading) {
     return (
@@ -19,5 +21,16 @@ export default function Home() {
     );
   }
 
-  return user ? <ChatWindow /> : <AuthForm />;
+  // return user ? <ChatWindow /> : <AuthForm />;
+  if (anonymousMode) {
+    return (
+      <ChatWindow isAnonymous={anonymousMode} setAnonymousMode={setAnonymousMode} />
+    );
+  }
+
+  return user ? (
+    <ChatWindow />
+  ) : (
+    <AuthForm isAnonymous={anonymousMode} setAnonymousMode={setAnonymousMode} />
+  );
 }
