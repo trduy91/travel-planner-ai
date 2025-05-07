@@ -36,5 +36,12 @@ export interface ActiveAgentConfig {
   provider: AIService; // e.g., AIService.Gemini
   model: string; // e.g., "gemini-1.5-pro-latest"
   apiKey?: string;
+  roleNames?: string[]; // e.g., ["ItineraryPlanner", "BudgetAdvisor"]
 }
 
+export enum AgentRole {
+  ItineraryPlanner = 'itineraryplanner',
+  BudgetAdvisor = 'budgetadvisor',
+  LocalCultureExpert = 'localcultureexpert',
+  RecommendationEngine = 'recommendationengine'
+}

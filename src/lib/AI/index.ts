@@ -39,16 +39,18 @@ export function parseActiveAgents(envVar?: string): ActiveAgentConfig[] {
 
   for (const agentString of agentStrings) {
     const parts = agentString.split(':');
-    if (parts.length === 3) {
-      const [alias, providerStr, model] = parts;
+    // Expecting alias:provider:model OR alias:provider:model:roleName
+    if (parts.length >= 3 && parts.length <= 4) { // Min 3 parts, max 4 (roles are the 4th part)
+      const [alias, providerStr, model, rolesString] = parts; // rolesString will be undefined if parts.length is 3
+      const roleNames = rolesString ? rolesString.split(',').map(r => r.trim()).filter(r => r) : undefined;
       const provider = providerStr.toLowerCase() as AIService;
       if (Object.values(AIService).includes(provider)) {
-        agentConfigs.push({ alias, provider, model });
+        agentConfigs.push({ alias, provider, model, roleNames });
       } else {
         console.warn(`Invalid provider string "${providerStr}" in NEXT_PUBLIC_ACTIVE_AGENTS. Skipping.`);
       }
     } else {
-      console.warn(`Invalid agent string format "${agentString}" in NEXT_PUBLIC_ACTIVE_AGENTS. Expected alias:provider:model. Skipping.`);
+      console.warn(`Invalid agent string format "${agentString}" in NEXT_PUBLIC_ACTIVE_AGENTS. Expected alias:provider:model or alias:provider:model:roleName1,roleName2. Skipping.`);
     }
   }
   return agentConfigs;
