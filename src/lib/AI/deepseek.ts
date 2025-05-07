@@ -2,13 +2,18 @@ import { callAI } from '@/lib/services/aiService';
 import { AIMessage, AIResponse, AIError, AIConfig, AIService } from './types';
 
 export class DeepSeekAI {
+  private model: string;
+  constructor(model: string, apiKey?: string) {
+    this.model = model;
+    console.log(`DeepSeekAI agent initialized for model ${this.model}`);
+  }
 
   async chat(
     messages: AIMessage[],
     config: AIConfig = {}
   ): Promise<AIResponse | AIError> {
     const defaultConfig: AIConfig = {
-      model: 'deepseek-chat',
+      model: this.model,
       temperature: 0.7,
       maxTokens: 1000,
       ...config,

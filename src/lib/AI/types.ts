@@ -1,5 +1,5 @@
 export interface AIMessage {
-  role: 'user' | 'assistant' | 'system';
+  role: 'user' | 'assistant' | 'system' | 'model';
   content: string;
   name?: string; // Optional for some APIs
 }
@@ -27,5 +27,14 @@ export type AIConfig = {
 export enum AIService {
   DeepSeek = 'deepseek',
   Gemini = 'gemini',
-  OpenAI = 'openai'
+  OpenAI = 'openai',
+  Llama = 'llama'
 }
+
+export interface ActiveAgentConfig {
+  alias: string; // Unique identifier for tagging, e.g., "gemini-pro"
+  provider: AIService; // e.g., AIService.Gemini
+  model: string; // e.g., "gemini-1.5-pro-latest"
+  apiKey?: string;
+}
+
